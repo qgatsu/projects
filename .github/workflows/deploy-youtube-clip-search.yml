@@ -1,0 +1,34 @@
+name: Deploy youtube_clip_search to Lightsail
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "youtube_clip_search/**"
+      - ".github/workflows/deploy-youtube-clip-search.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy on Lightsail
+        env:
+          DEPLOY_ROOT: ${{ secrets.DEPLOY_ROOT }}
+        run: |
+          ROOT_PATH="${DEPLOY_ROOT:-/var/www/projects}"
+          ssh -i ~/.ssh/id_rsa "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" <<EOF
+          set -e
+          cd "$ROOT_PATH"
+          git pull --ff-only origin main
+          docker compose -f youtube_clip_search/deploy/lightsail/docker-compose.yml up -d --build
+          EOF

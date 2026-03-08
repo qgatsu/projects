@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>haraikomi-OCR</title>
+    <link rel="stylesheet" href="/static/styles_plain.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="panel">
+        <form id="ocr-form" class="stack">
+          <label class="file-drop" for="image-input">
+            <span>払込票画像を選択</span>
+            <input id="image-input" name="file" type="file" accept="image/*" required />
+          </label>
+          <img id="preview-image" class="preview hidden" alt="uploaded preview" />
+          <button id="ocr-button" type="submit">OCR を実行</button>
+        </form>
+        <p id="ocr-status" class="status"></p>
+      </section>
+
+      <section class="workspace">
+        <section class="panel form-panel">
+          <div class="panel-head">
+            <h2>抽出結果</h2>
+            <p>必要なら修正してから登録します。</p>
+          </div>
+          <form id="calendar-form" class="stack">
+            <label>
+              タイトル
+              <input id="title" type="text" />
+            </label>
+            <label>
+              支払期限
+              <input id="due-date" type="date" />
+            </label>
+            <label>
+              金額 (JPY)
+              <input id="amount" type="number" min="0" step="1" />
+            </label>
+            <label>
+              メモ
+              <textarea id="notes" rows="10"></textarea>
+            </label>
+            <button id="calendar-button" type="submit">Google カレンダーに登録</button>
+          </form>
+          <p id="calendar-status" class="status"></p>
+          <a id="event-link" class="event-link hidden" target="_blank" rel="noreferrer">作成したイベントを開く</a>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "players": [
+    "高田健志",
+    "やえぎり",
+    "古川洋平",
+    "しんたろー",
+    "けーすけ",
+    "もるてん",
+    "烏丸御幸",
+    "ギン",
+    "うめけん",
+    "シバケン",
+    "みたま",
+    "kenken",
+    "ふじみや"
+  ],
+  "roles": [
+    {
+      "name": "高田健志",
+      "role": "占い師"
+    },
+    {
+      "name": "やえぎり",
+      "role": "村人"
+    },
+    {
+      "name": "古川洋平",
+      "role": "人狼"
+    },
+    {
+      "name": "しんたろー",
+      "role": "人狼"
+    },
+    {
+      "name": "けーすけ",
+      "role": "人狼"
+    },
+    {
+      "name": "もるてん",
+      "role": "村人"
+    },
+    {
+      "name": "烏丸御幸",
+      "role": "騎士"
+    },
+    {
+      "name": "ギン",
+      "role": "村人"
+    },
+    {
+      "name": "うめけん",
+      "role": "村人"
+    },
+    {
+      "name": "シバケン",
+      "role": "霊媒師"
+    },
+    {
+      "name": "みたま",
+      "role": "村人"
+    },
+    {
+      "name": "kenken",
+      "role": "村人"
+    },
+    {
+      "name": "ふじみや",
+      "role": "狂人"
+    }
+  ],
+  "roleSelections": {
+    "wolf": [
+      "古川洋平",
+      "しんたろー",
+      "けーすけ"
+    ],
+    "seer": [
+      "高田健志"
+    ],
+    "knight": [
+      "烏丸御幸"
+    ],
+    "mad": [
+      "ふじみや"
+    ],
+    "medium": [
+      "シバケン"
+    ]
+  },
+  "banmen": {
+    "seer": "0",
+    "medium": "1"
+  },
+  "note": "ガチ狼2-1-2",
+  "logs": [
+    {
+      "id": "mkwr15r0cofp7smyid",
+      "actor": "kenken",
+      "target": "けーすけ",
+      "action": "question",
+      "reason": "none"
+    },
+    {
+      "id": "mkwr1otalb1rg3lbwfo",
+      "actor": "ふじみや",
+      "target": "もるてん",
+      "action": "suspect",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr2fcs4fme7k0yo6q",
+      "actor": "古川洋平",
+      "target": "ギン",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr3ea591c0eli8aor",
+      "actor": "しんたろー",
+      "target": "もるてん",
+      "action": "suspect",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr4akqyirbic3wwag",
+      "actor": "みたま",
+      "target": "しんたろー",
+      "action": "binjou",
+      "reason": "none"
+    },
+    {
+      "id": "mkwr56xm1vw1d8ma281",
+      "actor": "みたま",
+      "target": "もるてん",
+      "action": "suspect",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwrag7tjdq2cbz652a",
+      "actor": "みたま",
+      "target": "古川洋平",
+      "action": "suspect",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwr5i6jlbexngmaodg",
+      "actor": "古川洋平",
+      "target": "みたま",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr6x68892ope2d9ih",
+      "actor": "ギン",
+      "target": "みたま",
+      "action": "question",
+      "reason": "none"
+    },
+    {
+      "id": "mkwr85qgs02ehxbfid",
+      "actor": "やえぎり",
+      "target": "しんたろー",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr8axst9p99bdiz6f",
+      "actor": "やえぎり",
+      "target": "烏丸御幸",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwr8zacd6jxs091x28",
+      "actor": "kenken",
+      "target": "けーすけ",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwrypmvkrykz80gsdq",
+      "actor": "ふじみや",
+      "target": "しんたろー",
+      "action": "two_wolf_deny",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwrytloco9u8w06upb",
+      "actor": "ふじみや",
+      "target": "古川洋平",
+      "action": "two_wolf_deny",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwrzj4g78t6pyrf0w4",
+      "actor": "もるてん",
+      "target": "けーすけ",
+      "action": "question",
+      "reason": "none"
+    },
+    {
+      "id": "mkws0g5rnkvuzvzapw",
+      "actor": "もるてん",
+      "target": "烏丸御幸",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws0mnlve6vy3l3s9",
+      "actor": "もるてん",
+      "target": "けーすけ",
+      "action": "thought_update",
+      "reason": "none"
+    },
+    {
+      "id": "mkws1bbaih25fdi2okk",
+      "actor": "みたま",
+      "target": "もるてん",
+      "action": "question",
+      "reason": "none"
+    },
+    {
+      "id": "mkws28t9jl3f1f21ovq",
+      "actor": "けーすけ",
+      "target": "みたま",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws2cht0hrmd8h9gmfn",
+      "actor": "けーすけ",
+      "target": "しんたろー",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkws3vkgb9uzodkz4et",
+      "actor": "ギン",
+      "target": "もるてん",
+      "action": "suspect",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws4riq0xehkvhqv9y",
+      "actor": "もるてん",
+      "target": "ギン",
+      "action": "thought_update",
+      "reason": "none"
+    },
+    {
+      "id": "mkws6wwtr7jb815g1a",
+      "actor": "うめけん",
+      "target": "けーすけ",
+      "action": "binjou",
+      "reason": "none"
+    },
+    {
+      "id": "mkws72nag810g3ilqja",
+      "actor": "うめけん",
+      "target": "しんたろー",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkws88vp7nsfg9k87l3",
+      "actor": "ふじみや",
+      "target": "けーすけ",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws8ctnaljq0wwn7af",
+      "actor": "ふじみや",
+      "target": "古川洋平",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws9m97ulrgzt113r",
+      "actor": "kenken",
+      "target": "しんたろー",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws9ord0eny516l6vdf",
+      "actor": "kenken",
+      "target": "みたま",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkws9qxzv4bqcp8zib",
+      "actor": "kenken",
+      "target": "烏丸御幸",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsa7bfzdqlizabg5h",
+      "actor": "kenken",
+      "target": "もるてん",
+      "action": "suspect",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsb71u2ynbhwzpiko",
+      "actor": "高田健志",
+      "target": "けーすけ",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsb9gpyfbl3ijk01",
+      "actor": "高田健志",
+      "target": "kenken",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsbbzsh7ccc0b1uak",
+      "actor": "高田健志",
+      "target": "もるてん",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwscf4twvrdlw0hjp8",
+      "actor": "烏丸御幸",
+      "target": "kenken",
+      "action": "suspect",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsdfcrboco0kbt76b",
+      "actor": "しんたろー",
+      "target": "みたま",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsdhud5yoanakeoti",
+      "actor": "しんたろー",
+      "target": "烏丸御幸",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsdmrpgnv4elivrvs",
+      "actor": "しんたろー",
+      "target": "もるてん",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsdpivq3ynur5ybm",
+      "actor": "しんたろー",
+      "target": "もるてん",
+      "action": "thought_update",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsdsuj7hg21jkee3a",
+      "actor": "しんたろー",
+      "target": "高田健志",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsf2y9711ptq5cod",
+      "actor": "みたま",
+      "target": "ギン",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsf51soh7bm70invc",
+      "actor": "みたま",
+      "target": "烏丸御幸",
+      "action": "white_raise",
+      "reason": "emotion"
+    },
+    {
+      "id": "mkwsgtxzto4bf17iu8s",
+      "actor": "古川洋平",
+      "target": "もるてん",
+      "action": "white_raise",
+      "reason": "logic"
+    },
+    {
+      "id": "mkwsgyluow5i1pplp6r",
+      "actor": "古川洋平",
+      "target": "ギン",
+      "action": "white_raise",
+      "reason": "logic"
+    }
+  ]
+}

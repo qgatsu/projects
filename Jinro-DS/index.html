@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jinro DS Logbook</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Jinro DS Logbook</p>
+          <h1>人狼データ成形</h1>
+        </div>
+        <div class="hero-card">
+          <p class="hero-label">Quick Flow</p>
+          <ol>
+            <li>名簿・役職を登録</li>
+            <li>盤面と行動ログを記録</li>
+            <li>特徴量テーブルを出力</li>
+          </ol>
+        </div>
+      </header>
+
+      <section class="grid">
+        <section class="panel">
+          <h2>初期設定</h2>
+          <div class="field">
+            <label for="player-names">プレイヤー名簿 (カンマ/改行区切り)</label>
+            <textarea
+              id="player-names"
+              rows="3"
+              placeholder="例: Alice, Bob&#10;Carol&#10;David"
+            ></textarea>
+            <div class="row">
+              <button id="apply-players" class="primary">名簿を登録</button>
+              <button id="clear-players" class="ghost">名簿をクリア</button>
+            </div>
+            <p class="help">名簿登録後、行動入力の候補に反映されます。</p>
+            <p id="player-status" class="status">未登録</p>
+            <div id="player-cards" class="player-cards"></div>
+          </div>
+
+          <div class="field">
+            <label>役職 (真相)</label>
+            <div class="role-grid">
+              <div class="role-card">
+                <span class="role-title">人狼</span>
+                <div id="role-wolf" class="role-list" data-role="wolf"></div>
+              </div>
+              <div class="role-card">
+                <span class="role-title">占い師</span>
+                <div id="role-seer" class="role-list" data-role="seer"></div>
+              </div>
+              <div class="role-card">
+                <span class="role-title">騎士</span>
+                <div id="role-knight" class="role-list" data-role="knight"></div>
+              </div>
+              <div class="role-card">
+                <span class="role-title">狂人</span>
+                <div id="role-mad" class="role-list" data-role="mad"></div>
+              </div>
+              <div class="role-card">
+                <span class="role-title">霊媒師</span>
+                <div id="role-medium" class="role-list" data-role="medium"></div>
+              </div>
+            </div>
+            <p class="help">複数選択できます。選択された役職以外は村人として扱います。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>盤面</h2>
+          <div class="field">
+            <label for="seer-count">占い師CO数</label>
+            <select id="seer-count"></select>
+          </div>
+          <div class="field">
+            <label for="medium-count">霊媒師CO数</label>
+            <select id="medium-count"></select>
+          </div>
+          <div class="field">
+            <label>盤面コード</label>
+            <div id="banmen-code" class="badge">0-0</div>
+          </div>
+          <div class="field">
+            <label for="note">備考</label>
+            <textarea id="note" rows="4" placeholder="任意メモ"></textarea>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <h2>行動ログ入力</h2>
+        <div class="action-grid">
+          <div class="field">
+            <label for="actor">誰が</label>
+            <select id="actor"></select>
+          </div>
+          <div class="field">
+            <label for="target">誰に</label>
+            <select id="target"></select>
+          </div>
+          <div class="field">
+            <label for="action">どのように</label>
+            <select id="action"></select>
+          </div>
+          <div class="field">
+            <label for="reason">理由タイプ</label>
+            <select id="reason"></select>
+          </div>
+        </div>
+        <div class="row">
+          <button id="add-log" class="primary">ログを追加</button>
+          <button id="clear-logs" class="ghost">ログをクリア</button>
+        </div>
+        <p class="help">「便乗」は議論中に他者の意見に乗ったことを記録します。</p>
+      </section>
+
+      <section class="grid">
+        <section class="panel log-panel">
+          <h2>行動ログ</h2>
+          <div id="log-list" class="log-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>特徴量テーブル</h2>
+          <div id="recalc-status" class="status">再計算: --:--:--</div>
+          <div class="table-wrap">
+            <table id="feature-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="row">
+            <button id="export-state" class="ghost">状態を書き出し</button>
+            <label class="ghost file-button">
+              状態を読み込み
+              <input id="import-state" type="file" accept=".json,application/json" hidden />
+            </label>
+          </div>
+          <div class="row">
+            <button id="export-json" class="ghost">JSONを書き出し</button>
+            <button id="export-csv" class="primary">CSV.gzを書き出し</button>
+          </div>
+          <p class="help">リーク特徴量は役職が入力されている場合のみ計算されます。</p>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js?v=3"></script>
+  </body>
+</html>

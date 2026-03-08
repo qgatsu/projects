@@ -1,9 +1,0 @@
-[submodule "jinro_tools"]
-	path = jinro_tools
-	url = git@github.com:qgatsu/jinro_tool.git
-[submodule "youtube_clip_search"]
-	path = youtube_clip_search
-	url = https://github.com/qgatsu/youtube_clip_search.git
-[submodule "youtube_clip_spike"]
-	path = youtube_clip_spike
-	url = https://github.com/qgatsu/youtube_clip_spike.git

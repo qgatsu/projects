@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>人狼パワーツール</title>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="icon" href="images/okami_halloween_gray.png" type="image/png">
+    </head>
+<body>
+    <div class="app">
+        <header class="app-toolbar">
+            <div class="toolbar-start">
+                <img
+                    src="images/hatena.png"
+                    alt="つかいかた"
+                    id="openHelpModalBtn"
+                    class="toolbar-icon help-icon"
+                    role="button"
+                    tabindex="0"
+                    aria-pressed="false"
+                >
+            </div>
+            <div class="brand-logo">
+                <span class="brand-text">人狼パワーツール</span>
+                <img src="images/okami_halloween_gray.png" alt="" class="brand-icon brand-icon-light" aria-hidden="true">
+                <img src="images/moon_yellow.png" alt="" class="brand-icon brand-icon-dark" aria-hidden="true">
+            </div>
+            <div class="toolbar-actions">
+                <img
+                    src="images/download_icon.png"
+                    alt="試合まとめをダウンロード"
+                    id="openExportModalBtn"
+                    class="toolbar-icon download-icon"
+                    role="button"
+                    tabindex="0"
+                    loading="lazy"
+                    decoding="async"
+                >
+                <button type="button" id="themeToggle" class="theme-toggle" aria-pressed="false" aria-label="ダークモードに切り替え">
+                    <span class="visually-hidden">テーマ切り替え</span>
+                    <img src="images/moon_icon_2.png" alt="" class="theme-icon theme-icon-dark" width="28" height="28" loading="lazy" decoding="async">
+                    <img src="images/taiyo_icon.png" alt="" class="theme-icon theme-icon-light" width="32" height="32" loading="lazy" decoding="async">
+                </button>
+            </div>
+        </header>
+        <main class="main-layout">
+            <section class="panel players-panel">
+                <div class="panel-header">
+                    <h2>プレイヤー</h2>
+                    <span class="count">0 人</span>
+                </div>
+                <form id="playerForm" class="player-form">
+                    <ul class="players-list" id="playersList">
+                        <li class="player-card empty">未登録です。下のフォームから追加してください。</li>
+                    </ul>
+                    <div class="input-row">
+                        <input type="text" name="name" placeholder="名前を入力" required>
+                    </div>
+                    <div class="player-actions">
+                        <button type="button" id="openBulkModalBtn">テキストから登録</button>
+                        <button type="submit">登録</button>
+                    </div>
+                </form>
+            </section>
+            <section class="panel co-panel">
+                <div class="panel-header co-header">
+                    <h2>CO表</h2>
+                    <button type="button" id="addRoleBtn" class="role-add-inline">役職を追加</button>
+                </div>
+                <div class="co-table-wrapper">
+                    <table class="co-table" id="coTable"></table>
+                </div>
+                <div class="voting-panel">
+                    <div class="panel-header">
+                        <h2>投票管理ツール</h2>
+                    </div>
+                    <div class="voting-controls">
+                        <button type="button" id="undoVoteBtn" disabled>取り消し</button>
+                        <button type="button" id="redoVoteBtn" disabled>やり直し</button>
+                    </div>
+                    <div class="voting-tabs" id="votingTabs"></div>
+                    <div class="voting-tab-content" id="votingContent"></div>
+                </div>
+            </section>
+            <section class="panel memo-panel">
+                <div class="panel-header">
+                    <h2>メモ</h2>
+                </div>
+                <textarea class="memo-textarea" placeholder="メモを入力してください..."></textarea>
+            </section>
+        </main>
+    </div>
+    <div class="modal-overlay" id="helpModal" aria-hidden="true">
+        <div class="modal help-modal">
+            <p class="help-intro">読み込み中です...</p>
+        </div>
+    </div>
+    <div class="modal-overlay" id="bulkModal" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>テキストから登録</h3>
+                <button type="button" class="modal-close" id="bulkModalClose" aria-label="閉じる">×</button>
+            </div>
+            <p class="modal-description">カンマや改行区切りで複数の名前を貼り付けてください。</p>
+            <textarea id="bulkPlayersInput" class="bulk-textarea" rows="6" placeholder="太郎, 花子&#10;田中"></textarea>
+            <div class="modal-actions">
+                <button type="button" id="bulkCancelBtn">キャンセル</button>
+                <button type="button" id="bulkSubmitBtn" class="primary">登録する</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="exportModal" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>試合まとめをダウンロード</h3>
+                <button type="button" class="modal-close" id="exportModalClose" aria-label="閉じる">×</button>
+            </div>
+            <p class="modal-description">試合結果と正解の配役を入力してください。</p>
+            <label class="modal-field-label" for="exportResultInput">試合結果</label>
+            <textarea id="exportResultInput" class="modal-textarea" rows="3" placeholder="例：村人勝ち / 狼負け"></textarea>
+            <label class="modal-field-label" for="exportRolesInput">正解の配役</label>
+            <textarea id="exportRolesInput" class="modal-textarea" rows="4" placeholder="例: 狼: 太郎, 花子&#10;占い: 山田"></textarea>
+            <div class="modal-actions">
+                <button type="button" id="exportCancelBtn">キャンセル</button>
+                <button type="button" id="exportSubmitBtn" class="primary">エクスポート開始</button>
+            </div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>

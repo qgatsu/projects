@@ -1,0 +1,10 @@
+# Exclude deployment assets and local configs from the static site image
+.deploy*
+deploy/
+Dockerfile
+Dockerfile.dev
+docker-compose.yml
+.git
+.gitignore
+README.md
+test/

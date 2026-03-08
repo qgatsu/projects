@@ -1,0 +1,7 @@
+services:
+  jinro_tool:
+    build: .
+    ports:
+      - "3000:80"
+    volumes:
+      - .:/usr/share/nginx/html:ro

@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  jinro_tool:
+    build:
+      context: ../..
+      dockerfile: deploy/lightsail/Dockerfile
+    image: jinro_tool:latest
+    container_name: jinro_tool
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped

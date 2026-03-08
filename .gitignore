@@ -1,1 +1,7 @@
 subscribe_coupon_optimization/
+
+# Python artifacts
+**/.venv/
+**/__pycache__/
+*.pyc
+**/.env

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>コメントスパイク解析くん</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  </head>
+  <body class="landing">
+    <header class="site-header">
+      <a class="logo" href="{{ url_for('main.index') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="コメントスパイク解析くん ロゴ" />
+        <span class="brand">コメントスパイク解析くん</span>
+      </a>
+      <nav class="site-nav">
+        <a href="#hero">トップ</a>
+        <a href="#total-section">全体スパイク</a>
+        <a href="#keyword-section">キーワード</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-content">
+          <p class="lead">
+            配信URLを貼り付けるだけでコメントの盛り上がりポイントをグラフ化し、気になるタイミングを素早く特定できます。
+          </p>
+          <section class="panel">
+            <label for="url-input">配信URL</label>
+            <div class="input-row">
+              <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." />
+              <button id="analyze-btn" class="button-primary">全コメントを解析</button>
+            </div>
+            <p id="status-text" class="status-text">準備完了</p>
+            <div class="progress" id="progress-section" aria-live="polite">
+              <div class="progress__meta">
+                <span class="progress__label">コメント取得状況</span>
+                <span class="progress__value" id="progress-value">0%</span>
+              </div>
+              <div class="progress__track">
+                <div class="progress__bar" id="progress-bar"></div>
+              </div>
+              <p class="progress__detail" id="progress-detail">
+                解析を開始すると進捗が表示されます。
+              </p>
+            </div>
+            <aside class="origin-preview" id="origin-preview" aria-live="polite">
+              <p class="placeholder-text">URLを入力すると元動画の情報が表示されます。</p>
+            </aside>
+          </section>
+        </div>
+      </section>
+
+      <section class="results-wrapper" id="total-section">
+        <div class="results-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Spike Overview</p>
+              <h2>全コメントスパイク</h2>
+            </div>
+          </div>
+          <div class="result-grid">
+            <div class="chart-wrapper panel">
+              <canvas id="total-chart"></canvas>
+            </div>
+            <div class="panel list-panel">
+              <h3>スパイク一覧</h3>
+              <div class="spike-controls" data-spike-target="total">
+                <span>並び替え</span>
+                <div class="chip-group">
+                  <button type="button" class="chip chip-small active" data-spike-target="total" data-spike-sort="peak">
+                    ピーク値
+                  </button>
+                  <button type="button" class="chip chip-small" data-spike-target="total" data-spike-sort="time">
+                    時間順
+                  </button>
+                </div>
+              </div>
+              <ul id="total-spike-list" class="spike-list"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="results-wrapper" id="keyword-section">
+        <div class="results-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Keyword Filter</p>
+              <h2>キーワードフィルタ</h2>
+            </div>
+            <div class="keyword-controls">
+              <input type="text" id="keyword-input" placeholder="例: GG" />
+              <button id="keyword-analyze-btn" class="chip" disabled>キーワード解析</button>
+            </div>
+          </div>
+          <p id="keyword-status" class="status-text">キーワード未解析</p>
+          <div class="result-grid">
+            <div class="chart-wrapper panel">
+              <canvas id="keyword-chart"></canvas>
+            </div>
+            <div class="panel list-panel">
+              <h3>キーワードスパイク</h3>
+              <div class="spike-controls" data-spike-target="keyword">
+                <span>並び替え</span>
+                <div class="chip-group">
+                  <button type="button" class="chip chip-small active" data-spike-target="keyword" data-spike-sort="peak">
+                    ピーク値
+                  </button>
+                  <button type="button" class="chip chip-small" data-spike-target="keyword" data-spike-sort="time">
+                    時間順
+                  </button>
+                </div>
+              </div>
+              <ul id="keyword-spike-list" class="spike-list"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-links">
+          <a href="#">このサイトについて</a> |
+          <a href="#">利用規約</a> |
+          <a href="#">プライバシーポリシー</a>
+        </p>
+        <p class="footer-note">
+          本サービスは YouTube Data API Services を利用しています。<br />
+          This service uses YouTube Data API Services.
+        </p>
+        <p class="footer-note">
+          <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer">
+            YouTube 利用規約
+          </a>
+          /
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+            Google プライバシーポリシー
+          </a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>

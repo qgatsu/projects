@@ -9,17 +9,16 @@ services:
 
   web:
     build: .
-    command: [
-      "gunicorn",
-      "-b",
-      "0.0.0.0:5000",
-      "--timeout",
-      "180",
-      "app:create_app()"
-    ]
+    command:
+      [
+        "bash",
+        "-lc",
+        "gunicorn -b 0.0.0.0:5000 --timeout ${GUNICORN_TIMEOUT:-600} 'app:create_app()'",
+      ]
     environment:
       FLASK_APP: app
       REDIS_URL: redis://redis:6379/0
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-600}
     env_file:
       - .env
     ports:

@@ -8,3 +8,6 @@ rq>=1.15
 gunicorn>=21.2
 requests>=2.31
 janome>=0.5
+yt-dlp>=2025.1.0
+faster-whisper>=1.1.1
+pyannote.audio>=3.3.2

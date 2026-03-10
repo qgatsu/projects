@@ -13,15 +13,26 @@ const totalSpikeList = document.getElementById("total-spike-list");
 const keywordSpikeList = document.getElementById("keyword-spike-list");
 const totalCanvas = document.getElementById("total-chart");
 const keywordCanvas = document.getElementById("keyword-chart");
+const spikeModal = document.getElementById("spike-action-modal");
+const spikeActionMessage = document.getElementById("spike-action-message");
+const spikeActionPreview = document.getElementById("spike-action-preview");
+const spikeViewBtn = document.getElementById("spike-view-btn");
+const spikeAddBtn = document.getElementById("spike-add-btn");
+const spikeCancelBtn = document.getElementById("spike-cancel-btn");
 const DEFAULT_Y_MAX = 10; // CPSの最低縦軸上限
 const Y_PADDING_RATIO = 0.15;
+const CLIP_DURATION_OPTIONS = [15, 30, 45, 60, 75, 90];
+const DEFAULT_CLIP_DURATION_SECONDS = 30;
+const PEAK_POSITION_RATIO = 0.75;
+const SPEAKER_COUNT_OPTIONS = ["auto", 1, 2, 3, 4];
+const DEFAULT_SPEAKER_COUNT = "auto";
 const spikeState = {
   total: [],
   keyword: [],
 };
-const spikeSortState = {
-  total: "peak",
-  keyword: "peak",
+const addedSpikeState = {
+  total: [],
+  keyword: [],
 };
 const spikeListMap = {
   total: totalSpikeList,
@@ -38,6 +49,9 @@ let currentJobId = null;
 let videoInfoTimer = null;
 let videoInfoController = null;
 let currentVideoDuration = null;
+let currentVideoTitle = "";
+let pendingSpikeType = null;
+let pendingSpike = null;
 const VIDEO_PREVIEW_PLACEHOLDER = "URLを入力すると元動画の情報が表示されます。";
 
 async function analyze() {
@@ -81,6 +95,9 @@ function resetResults() {
   keywordStatus.textContent = "キーワード未解析";
   spikeState.total = [];
   spikeState.keyword = [];
+  addedSpikeState.total = [];
+  addedSpikeState.keyword = [];
+  closeSpikeActionModal();
   renderSpikeList("total");
   renderSpikeList("keyword");
   resetProgress();
@@ -222,6 +239,8 @@ function setProgressDetail(message) {
 
 function renderTotalSection(result) {
   const series = result.series;
+  spikeState.total = result.spikes || [];
+  addedSpikeState.total = [];
   renderLineChart(
     totalCanvas,
     "全コメント (スムージング)",
@@ -230,13 +249,14 @@ function renderTotalSection(result) {
     "#111",
     "total"
   );
-  spikeState.total = result.spikes || [];
   renderSpikeList("total");
 }
 
 function renderKeywordSection(result, keyword) {
   keywordStatus.textContent = `「${keyword}」の結果`;
   const series = result.series;
+  spikeState.keyword = result.spikes || [];
+  addedSpikeState.keyword = [];
   renderLineChart(
     keywordCanvas,
     `キーワード (${keyword})`,
@@ -247,13 +267,13 @@ function renderKeywordSection(result, keyword) {
     "#00c48c",
     "keyword"
   );
-  spikeState.keyword = result.spikes || [];
   renderSpikeList("keyword");
 }
 
 function renderLineChart(canvas, label, labels, data, color, type) {
   destroyChart(type === "total" ? totalChart : keywordChart);
   const yMax = computeYMax(data);
+  const spikeMarkers = buildSpikeMarkerSeries(labels, spikeState[type] || []);
   const chartInstance = new Chart(canvas, {
     type: "line",
     data: {
@@ -269,11 +289,29 @@ function renderLineChart(canvas, label, labels, data, color, type) {
           pointHoverRadius: 4,
           pointHitRadius: 6,
         },
+        {
+          label: "スパイク",
+          data: spikeMarkers,
+          borderColor: "transparent",
+          backgroundColor: "#ef4444",
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointHitRadius: 40,
+          showLine: false,
+          spanGaps: true,
+        },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        mode: "nearest",
+        intersect: false,
+      },
+      onClick: (event, _elements, chart) => {
+        handleChartClick(type, event, chart);
+      },
       scales: {
         x: { title: { display: true, text: "秒" } },
         y: {
@@ -291,6 +329,27 @@ function renderLineChart(canvas, label, labels, data, color, type) {
   } else {
     keywordChart = chartInstance;
   }
+}
+
+function buildSpikeMarkerSeries(labels, spikes) {
+  if (!Array.isArray(labels) || labels.length === 0) {
+    return [];
+  }
+  const markers = new Array(labels.length).fill(null);
+  if (!Array.isArray(spikes) || spikes.length === 0) {
+    return markers;
+  }
+  spikes.forEach((spike) => {
+    const index = findNearestIndex(labels, spike.peak_time);
+    if (index < 0) {
+      return;
+    }
+    const current = markers[index];
+    if (typeof current !== "number" || spike.peak_value > current) {
+      markers[index] = spike.peak_value;
+    }
+  });
+  return markers;
 }
 
 function destroyChart(chartInstance) {
@@ -321,15 +380,24 @@ function renderSpikeList(type) {
   const listElement = spikeListMap[type];
   if (!listElement) return;
   const spikes = spikeState[type] || [];
-  const sorted = sortSpikes(spikes, spikeSortState[type]);
-  if (!sorted.length) {
+  const addedEntries = addedSpikeState[type] || [];
+  if (!spikes.length) {
     listElement.innerHTML =
       '<li class="spike-card">しきい値を超えるスパイクはありませんでした。</li>';
     return;
   }
+  if (!addedEntries.length) {
+    listElement.innerHTML =
+      '<li class="spike-card">チャート上の赤いスパイク点をクリックして「追加」を押すとカードが並びます。</li>';
+    return;
+  }
   listElement.innerHTML = "";
   const fragment = document.createDocumentFragment();
-  sorted.forEach((spike) => {
+  addedEntries.forEach((entry) => {
+    const spike = entry.spike;
+    const clipDurationSeconds =
+      Number(entry.clipDurationSeconds) || DEFAULT_CLIP_DURATION_SECONDS;
+    const speakerCount = normalizeSpeakerCount(entry.speakerCount);
     const item = document.createElement("li");
     item.className = "spike-card";
     item.tabIndex = 0;
@@ -349,7 +417,54 @@ function renderSpikeList(type) {
         </div>
         <a class="spike-card__link" href="${spike.jump_url}" target="_blank" rel="noopener noreferrer">視聴</a>
       </div>
+      <div class="spike-card__clip">
+        <label class="spike-card__clip-label">
+          全体
+          <select class="spike-card__clip-select">${buildClipDurationOptions(clipDurationSeconds)}</select>
+          秒
+        </label>
+        <label class="spike-card__clip-label">
+          話者
+          <select class="spike-card__speaker-select">${buildSpeakerCountOptions(speakerCount)}</select>
+        </label>
+        <span class="spike-card__clip-range">${buildClipRangeText(
+          spike.peak_time,
+          clipDurationSeconds
+        )}</span>
+        <button type="button" class="chip chip-small spike-card__save">保存</button>
+        <button type="button" class="chip chip-small spike-card__remove">削除</button>
+      </div>
+      ${entry.lastSavedPath ? `<p class="spike-card__saved">ダウンロード済み: ${escapeHtml(entry.lastSavedPath)}</p>` : ""}
     `;
+    const select = item.querySelector(".spike-card__clip-select");
+    if (select) {
+      select.addEventListener("change", (event) => {
+        const value = Number(event.target.value);
+        if (Number.isNaN(value) || value <= 0) {
+          return;
+        }
+        updateClipDuration(type, entry.key, value);
+      });
+    }
+    const speakerSelect = item.querySelector(".spike-card__speaker-select");
+    if (speakerSelect) {
+      speakerSelect.addEventListener("change", (event) => {
+        const value = normalizeSpeakerCount(event.target.value);
+        updateSpeakerCount(type, entry.key, value);
+      });
+    }
+    const removeButton = item.querySelector(".spike-card__remove");
+    if (removeButton) {
+      removeButton.addEventListener("click", () => {
+        removeSpikeCard(type, entry.key);
+      });
+    }
+    const saveButton = item.querySelector(".spike-card__save");
+    if (saveButton) {
+      saveButton.addEventListener("click", () => {
+        downloadSpikeCard(type, entry.key, saveButton);
+      });
+    }
     item.addEventListener("mouseenter", () => highlightSpike(type, spike));
     item.addEventListener("focus", () => highlightSpike(type, spike));
     item.addEventListener("mouseleave", () => clearHighlight(type));
@@ -374,6 +489,41 @@ function renderWordBadges(words) {
     .filter(Boolean)
     .join("");
   return badges || `<span class="word-badge muted">${escapeHtml("該当なし")}</span>`;
+}
+
+function buildClipDurationOptions(selectedValue) {
+  return CLIP_DURATION_OPTIONS.map((seconds) => {
+    const selected = seconds === selectedValue ? " selected" : "";
+    return `<option value="${seconds}"${selected}>${seconds}</option>`;
+  }).join("");
+}
+
+function buildSpeakerCountOptions(selectedValue) {
+  const safeValue = normalizeSpeakerCount(selectedValue);
+  return SPEAKER_COUNT_OPTIONS.map((value) => {
+    const selected = value === safeValue ? " selected" : "";
+    if (value === "auto") {
+      return `<option value="auto"${selected}>自動</option>`;
+    }
+    return `<option value="${value}"${selected}>${value}人</option>`;
+  }).join("");
+}
+
+function buildClipRangeText(peakTime, durationSeconds) {
+  const start = Math.max(0, peakTime - durationSeconds * PEAK_POSITION_RATIO);
+  const end = Math.max(start, start + durationSeconds);
+  return `${formatTimestamp(start)} - ${formatTimestamp(end)}`;
+}
+
+function normalizeSpeakerCount(value) {
+  if (value === "auto" || value == null || value === "") {
+    return "auto";
+  }
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) {
+    return "auto";
+  }
+  return num;
 }
 
 function escapeHtml(value) {
@@ -453,6 +603,7 @@ function renderOriginPreview(info) {
     return;
   }
   currentVideoDuration = typeof info.duration_seconds === "number" ? info.duration_seconds : null;
+  currentVideoTitle = typeof info.title === "string" ? info.title : "";
   originPreview.classList.add("has-content");
   const title = escapeHtml(info.title || "不明な動画");
   const channel = escapeHtml(info.channel_title || "-");
@@ -492,6 +643,7 @@ function showOriginLoading() {
 function showOriginError(message) {
   if (!originPreview) return;
   currentVideoDuration = null;
+  currentVideoTitle = "";
   originPreview.classList.remove("has-content");
   originPreview.innerHTML = `<p class="placeholder-text">${escapeHtml(message)}</p>`;
 }
@@ -499,6 +651,7 @@ function showOriginError(message) {
 function resetOriginPreview(message = VIDEO_PREVIEW_PLACEHOLDER) {
   if (!originPreview) return;
   currentVideoDuration = null;
+  currentVideoTitle = "";
   originPreview.classList.remove("has-content");
   originPreview.innerHTML = `<p class="placeholder-text">${escapeHtml(message)}</p>`;
 }
@@ -531,14 +684,6 @@ function formatTimecode(totalSeconds) {
     return `${hours}:${mm}:${ss}`;
   }
   return `${mm}:${ss}`;
-}
-
-function sortSpikes(spikes, sortKey) {
-  const copy = [...spikes];
-  if (sortKey === "time") {
-    return copy.sort((a, b) => a.peak_time - b.peak_time);
-  }
-  return copy.sort((a, b) => b.peak_value - a.peak_value);
 }
 
 function formatTimestamp(value) {
@@ -606,29 +751,60 @@ function getChartByType(type) {
   return type === "total" ? totalChart : keywordChart;
 }
 
-function setupSpikeSortControls() {
-  const buttons = document.querySelectorAll("[data-spike-sort]");
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const target = button.dataset.spikeTarget;
-      const sortKey = button.dataset.spikeSort;
-      if (!target || !sortKey || !spikeState[target]) {
-        return;
-      }
-      spikeSortState[target] = sortKey;
-      setActiveSortButton(target, sortKey);
-      renderSpikeList(target);
-    });
-  });
+function handleChartClick(type, event, chart) {
+  const spikes = spikeState[type] || [];
+  if (!Array.isArray(spikes) || spikes.length === 0) {
+    return;
+  }
+  if (!chart || !event) {
+    return;
+  }
+  const elements = chart.getElementsAtEventForMode(
+    event,
+    "nearest",
+    { intersect: true },
+    false
+  );
+  if (!Array.isArray(elements) || elements.length === 0) {
+    return;
+  }
+  const spikeElement = elements.find((element) => element?.datasetIndex === 1);
+  if (!spikeElement) {
+    return;
+  }
+  const index = spikeElement.index;
+  if (typeof index !== "number" || index < 0) {
+    return;
+  }
+  const label = chart?.data?.labels?.[index];
+  const xValue = typeof label === "number" ? label : parseFloat(String(label));
+  if (Number.isNaN(xValue)) {
+    return;
+  }
+  const selected = findNearestSpike(spikes, xValue);
+  if (!selected) {
+    return;
+  }
+  pendingSpikeType = type;
+  pendingSpike = selected;
+  openSpikeActionModal(type, selected);
+  highlightSpike(type, selected);
 }
 
-function setActiveSortButton(target, sortKey) {
-  document
-    .querySelectorAll(`[data-spike-target="${target}"][data-spike-sort]`)
-    .forEach((button) => {
-      const element = button;
-      element.classList.toggle("active", element.dataset.spikeSort === sortKey);
-    });
+function findNearestSpike(spikes, targetTime) {
+  let selected = null;
+  let bestDiff = Number.POSITIVE_INFINITY;
+  spikes.forEach((spike) => {
+    if (!spike || typeof spike.peak_time !== "number") {
+      return;
+    }
+    const diff = Math.abs(spike.peak_time - targetTime);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      selected = spike;
+    }
+  });
+  return selected;
 }
 
 if (urlInput) {
@@ -640,7 +816,43 @@ if (urlInput) {
   }
 }
 
-setupSpikeSortControls();
+if (spikeModal) {
+  spikeModal.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLElement && target.hasAttribute("data-modal-close")) {
+      closeSpikeActionModal();
+    }
+  });
+}
+
+if (spikeCancelBtn) {
+  spikeCancelBtn.addEventListener("click", () => {
+    closeSpikeActionModal();
+  });
+}
+
+if (spikeViewBtn) {
+  spikeViewBtn.addEventListener("click", () => {
+    if (!pendingSpike || !pendingSpike.jump_url) {
+      closeSpikeActionModal();
+      return;
+    }
+    window.open(pendingSpike.jump_url, "_blank", "noopener,noreferrer");
+    closeSpikeActionModal();
+  });
+}
+
+if (spikeAddBtn) {
+  spikeAddBtn.addEventListener("click", () => {
+    if (!pendingSpikeType || !pendingSpike) {
+      closeSpikeActionModal();
+      return;
+    }
+    addSpikeCard(pendingSpikeType, pendingSpike);
+    closeSpikeActionModal();
+  });
+}
+
 renderSpikeList("total");
 renderSpikeList("keyword");
 
@@ -677,3 +889,274 @@ async function analyzeKeyword() {
 
 analyzeBtn.addEventListener("click", analyze);
 keywordBtn.addEventListener("click", analyzeKeyword);
+
+function openSpikeActionModal(type, spike) {
+  if (!spikeModal || !spikeActionMessage || !spikeActionPreview) {
+    return;
+  }
+  spikeActionMessage.textContent = "代表コメント";
+  spikeActionPreview.innerHTML = renderWordBadges(spike.top_words);
+  spikeModal.hidden = false;
+}
+
+function closeSpikeActionModal() {
+  if (!spikeModal) {
+    return;
+  }
+  spikeModal.hidden = true;
+  pendingSpikeType = null;
+  pendingSpike = null;
+}
+
+function addSpikeCard(type, spike) {
+  const list = addedSpikeState[type];
+  if (!Array.isArray(list)) {
+    return;
+  }
+  const key = buildSpikeKey(spike);
+  const exists = list.some((item) => item.key === key);
+  if (!exists) {
+    list.push({
+      key,
+      spike,
+      clipDurationSeconds: DEFAULT_CLIP_DURATION_SECONDS,
+      speakerCount: DEFAULT_SPEAKER_COUNT,
+    });
+  }
+  renderSpikeList(type);
+}
+
+function updateClipDuration(type, key, seconds) {
+  const list = addedSpikeState[type];
+  if (!Array.isArray(list)) {
+    return;
+  }
+  const target = list.find((entry) => entry.key === key);
+  if (!target) {
+    return;
+  }
+  target.clipDurationSeconds = seconds;
+  renderSpikeList(type);
+}
+
+function updateSpeakerCount(type, key, speakerCount) {
+  const list = addedSpikeState[type];
+  if (!Array.isArray(list)) {
+    return;
+  }
+  const target = list.find((entry) => entry.key === key);
+  if (!target) {
+    return;
+  }
+  target.speakerCount = speakerCount;
+  renderSpikeList(type);
+}
+
+function removeSpikeCard(type, key) {
+  const list = addedSpikeState[type];
+  if (!Array.isArray(list)) {
+    return;
+  }
+  const index = list.findIndex((entry) => entry.key === key);
+  if (index < 0) {
+    return;
+  }
+  list.splice(index, 1);
+  renderSpikeList(type);
+}
+
+async function downloadSpikeCard(type, key, buttonElement) {
+  const list = addedSpikeState[type];
+  if (!Array.isArray(list)) {
+    return;
+  }
+  const target = list.find((entry) => entry.key === key);
+  if (!target) {
+    return;
+  }
+  const button = buttonElement;
+  const originalText = button.textContent;
+  const provisionalFilename = buildProvisionalClipFilename(target);
+  button.disabled = true;
+  button.textContent = "保存中...";
+  try {
+    const pickerResult = await prepareSaveTarget(provisionalFilename);
+    const response = await fetch("/api/clips/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: target.spike.jump_url,
+        video_title: currentVideoTitle,
+        peak_time: target.spike.peak_time,
+        clip_duration_seconds: target.clipDurationSeconds,
+        clip_speaker_count: normalizeSpeakerCount(target.speakerCount),
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "切り抜き保存に失敗しました");
+    }
+    const filename = resolveDownloadFilename(response) || provisionalFilename;
+    const savedPath = await saveClipResponse(response, filename, pickerResult);
+    target.lastSavedPath = filename;
+    if (savedPath) {
+      setStatus(`保存しました: ${savedPath}`);
+    } else if (pickerResult.reason) {
+      setStatus(`ブラウザ通常ダウンロードに切替: ${filename} (${pickerResult.reason})`);
+    } else {
+      setStatus(`ダウンロードを開始しました: ${filename}`);
+    }
+    renderSpikeList(type);
+  } catch (error) {
+    setStatus(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+function resolveDownloadFilename(response) {
+  const contentDisposition = response.headers.get("content-disposition") || "";
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match && utf8Match[1]) {
+    return sanitizeDownloadFilename(decodeURIComponent(utf8Match[1]));
+  }
+  const plainMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  if (plainMatch && plainMatch[1]) {
+    return sanitizeDownloadFilename(plainMatch[1]);
+  }
+  return "";
+}
+
+function sanitizeDownloadFilename(value) {
+  if (!value) {
+    return "";
+  }
+  const normalized = String(value).replace(/\\/g, "/");
+  const parts = normalized.split("/");
+  return parts[parts.length - 1] || "";
+}
+
+async function prepareSaveTarget(suggestedName) {
+  if (typeof window.showSaveFilePicker !== "function") {
+    return {
+      fileHandle: null,
+      reason: "save picker未対応",
+    };
+  }
+  try {
+    const fileHandle = await window.showSaveFilePicker({
+      suggestedName: suggestedName || "clip.zip",
+      startIn: "downloads",
+      types: [
+        {
+          description: "Zip archive",
+          accept: {
+            "application/zip": [".zip"],
+          },
+        },
+      ],
+    });
+    return {
+      fileHandle,
+      reason: "",
+    };
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      throw new Error("保存がキャンセルされました");
+    }
+    if (error && error.name) {
+      return {
+        fileHandle: null,
+        reason: `picker失敗: ${error.name}`,
+      };
+    }
+    return {
+      fileHandle: null,
+      reason: "picker失敗",
+    };
+  }
+}
+
+async function saveClipResponse(response, filename, pickerResult) {
+  if (pickerResult?.fileHandle && response && response.body) {
+    const writable = await pickerResult.fileHandle.createWritable();
+    const reader = response.body.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        await writable.write(value);
+      }
+    } catch (_error) {
+      await writable.abort();
+      throw new Error("保存中にエラーが発生しました");
+    }
+    await writable.close();
+    return pickerResult.fileHandle.name || filename;
+  }
+  const blob = await response.blob();
+  triggerBrowserDownload(blob, filename);
+  return "";
+}
+
+function buildProvisionalClipFilename(entry) {
+  const peak = Number(entry?.spike?.peak_time) || 0;
+  const duration = Number(entry?.clipDurationSeconds) || DEFAULT_CLIP_DURATION_SECONDS;
+  const start = Math.max(0, Math.floor(peak - duration * PEAK_POSITION_RATIO));
+  const end = Math.max(start + 1, Math.floor(start + duration));
+  return `clip_${start}-${end}.zip`;
+}
+
+function triggerBrowserDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function buildSpikeKey(spike) {
+  if (!spike) {
+    return "";
+  }
+  return [
+    spike.jump_url || "",
+    String(spike.start_time ?? ""),
+    String(spike.peak_time ?? ""),
+    String(spike.peak_value ?? ""),
+  ].join("|");
+}
+
+function getClipSelectionPayload() {
+  const toPayload = (entries) =>
+    entries.map((entry) => {
+      const seconds =
+        Number(entry.clipDurationSeconds) || DEFAULT_CLIP_DURATION_SECONDS;
+      const peak = Number(entry.spike?.peak_time) || 0;
+      const start = Math.max(0, peak - seconds * PEAK_POSITION_RATIO);
+      const end = Math.max(start, start + seconds);
+      const speakerCount = normalizeSpeakerCount(entry.speakerCount);
+      return {
+        key: entry.key,
+        jump_url: entry.spike?.jump_url || "",
+        peak_time: peak,
+        clip_duration_seconds: seconds,
+        clip_speaker_count: speakerCount,
+        clip_start_time: start,
+        clip_end_time: end,
+      };
+    });
+
+  return {
+    total: toPayload(addedSpikeState.total || []),
+    keyword: toPayload(addedSpikeState.keyword || []),
+  };
+}
+
+window.getClipSelectionPayload = getClipSelectionPayload;

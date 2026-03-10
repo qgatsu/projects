@@ -1,0 +1,20 @@
+# Visualization Function Reference (for AI agents)
+
+- two_variable_correlation_scatter:
+  2つの数値列の相関散布図を作る。主引数: x_col, y_col（任意: sample_n, dropna）。
+
+- correlation_heatmap:
+  数値列群の相関行列ヒートマップを作る。主引数: columns（任意）, method, min_periods。
+
+- scatter_heatmap:
+  2変数の散布図と2D密度ヒートマップを同時表示する。主引数: x_col, y_col（任意: bins, sample_n）。
+
+- violin_plot:
+  数値分布をバイオリンで可視化する。主引数: value_col（任意: group_col, sample_n）。
+
+- timeseries_plot:
+  時系列折れ線を作る（単系列/2系列/カテゴリ色分け対応）。主引数: time_col, y_col（任意: y2_col, hue_col, freq, agg）。
+
+Notes:
+- デフォルト引数は app/viz_defaults.py の VISUALIZATION_DEFAULT_ARGS を参照。
+- 実装本体は app/viz_functions.py。

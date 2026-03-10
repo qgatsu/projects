@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  web:
+    command:
+      [
+        "bash",
+        "-lc",
+        "gunicorn -b 0.0.0.0:5000 --timeout ${GUNICORN_TIMEOUT:-600} --reload 'app:create_app()'",
+      ]
+    volumes:
+      - ./:/app
+
+  worker:
+    volumes:
+      - ./:/app

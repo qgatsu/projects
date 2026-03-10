@@ -1,0 +1,16 @@
+services:
+  kagari-bi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kagari-bi
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - FLASK_ENV=development
+    restart: unless-stopped

@@ -151,4 +151,66 @@ def load_app_config(config_path: Path | None = None) -> Dict[str, Any]:
                 )
             ),
         },
+        "CLIP_DOWNLOAD": {
+            "output_dir": os.getenv(
+                "CLIP_OUTPUT_DIR",
+                "/tmp/youtube_clip_spike",
+            ),
+            "parallel_fragments": int(
+                os.getenv(
+                    "CLIP_PARALLEL_FRAGMENTS",
+                    file_config.get("clip_download", {}).get("parallel_fragments", 24),
+                )
+            ),
+        },
+        "TRANSCRIPT": {
+            "enabled": str(
+                os.getenv(
+                    "CLIP_TRANSCRIPT_ENABLED",
+                    file_config.get("transcript", {}).get("enabled", "false"),
+                )
+            ).lower()
+            in {"1", "true", "yes", "on"},
+            "model": os.getenv(
+                "CLIP_TRANSCRIPT_MODEL",
+                file_config.get("transcript", {}).get("model", "small"),
+            ),
+            "device": os.getenv(
+                "CLIP_TRANSCRIPT_DEVICE",
+                file_config.get("transcript", {}).get("device", "cpu"),
+            ),
+            "compute_type": os.getenv(
+                "CLIP_TRANSCRIPT_COMPUTE_TYPE",
+                file_config.get("transcript", {}).get("compute_type", "int8"),
+            ),
+            "language": os.getenv(
+                "CLIP_TRANSCRIPT_LANGUAGE",
+                file_config.get("transcript", {}).get("language", "ja"),
+            ),
+            "diarization_enabled": str(
+                os.getenv(
+                    "CLIP_DIARIZATION_ENABLED",
+                    file_config.get("transcript", {}).get("diarization_enabled", "true"),
+                )
+            ).lower()
+            in {"1", "true", "yes", "on"},
+            "diarization_model": os.getenv(
+                "CLIP_DIARIZATION_MODEL",
+                file_config.get("transcript", {}).get(
+                    "diarization_model", "pyannote/speaker-diarization-3.1"
+                ),
+            ),
+            "hf_token": os.getenv(
+                "HUGGINGFACE_TOKEN",
+                file_config.get("transcript", {}).get("hf_token"),
+            ),
+            "min_speakers": os.getenv(
+                "CLIP_DIARIZATION_MIN_SPEAKERS",
+                file_config.get("transcript", {}).get("min_speakers", 2),
+            ),
+            "max_speakers": os.getenv(
+                "CLIP_DIARIZATION_MAX_SPEAKERS",
+                file_config.get("transcript", {}).get("max_speakers", 2),
+            ),
+        },
     }

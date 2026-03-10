@@ -29,3 +29,15 @@ redis:
   queue_name: analysis
   job_timeout: 900
   result_ttl: 86400
+
+transcript:
+  enabled: false
+  model: small
+  device: cpu
+  compute_type: int8
+  language: ja
+  diarization_enabled: true
+  diarization_model: pyannote/speaker-diarization-3.1
+  hf_token: null
+  min_speakers: 2
+  max_speakers: 2

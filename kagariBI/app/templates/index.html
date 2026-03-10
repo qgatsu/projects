@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kagariBI</title>
+    <link rel="icon" type="image/png" href="/static/img/kagaribi_tab_logo.png" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <img src="/static/img/kagaribi_logo.png" alt="kagariBI" class="brand-logo" />
+    </header>
+
+    <main class="container">
+      <nav class="tab-nav">
+        <button type="button" class="tab-btn active" data-tab="eda">EDAツール</button>
+        <button type="button" class="tab-btn" data-tab="chat-viz">チャット可視化</button>
+      </nav>
+
+      <section id="tab-eda" class="tab-panel">
+        <section class="upload-panel card">
+          <form id="upload-form">
+            <div class="row">
+              <label for="file">データファイル</label>
+              <input id="file" name="file" type="file" accept=".csv,.parquet,.pq,.pkl,.pickle" required />
+            </div>
+            <div class="row three" id="csv-options">
+              <div class="csv-option">
+                <label for="delimiter">区切り文字</label>
+                <select id="delimiter" name="delimiter">
+                  <option value=",">,</option>
+                  <option value="\t">TAB</option>
+                  <option value=";">;</option>
+                  <option value="|">|</option>
+                </select>
+              </div>
+              <div class="csv-option">
+                <label for="encoding">エンコーディング</label>
+                <select id="encoding" name="encoding">
+                  <option value="utf-8">utf-8</option>
+                  <option value="cp932">cp932</option>
+                  <option value="utf-8-sig">utf-8-sig</option>
+                </select>
+              </div>
+              <div class="action-wrap">
+                <button type="submit" id="analyze-btn">分析する</button>
+              </div>
+            </div>
+          </form>
+          <p id="status" class="status"></p>
+        </section>
+
+        <section id="summary" class="summary-grid"></section>
+
+        <section class="layout">
+          <article class="card">
+            <h2>列サマリー（テーブル）</h2>
+            <div class="table-wrap">
+              <table id="column-table">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="card">
+          <h2>先頭20行プレビュー</h2>
+          <div class="table-wrap">
+            <table id="preview-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="tab-chat-viz" class="tab-panel hidden">
+        <section class="chatgpt-shell">
+          <div id="chat-history" class="chatgpt-history"></div>
+          <div class="chatgpt-composer-wrap">
+            <div class="chatgpt-composer-inner">
+              <p id="chat-status" class="chat-status"></p>
+              <form id="chat-form" class="chatgpt-form">
+                <textarea id="chat-input" rows="1" placeholder="可視化したい内容を入力"></textarea>
+                <button type="submit" id="chat-send-btn">Send</button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

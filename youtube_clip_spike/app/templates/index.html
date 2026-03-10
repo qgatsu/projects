@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>コメントスパイク解析くん</title>
+    <title>YouTubeコメントスパイク解析</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=asset_version('css/style.css')) }}" />
   </head>
   <body class="landing">
     <header class="site-header">
       <a class="logo" href="{{ url_for('main.index') }}">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="コメントスパイク解析くん ロゴ" />
-        <span class="brand">コメントスパイク解析くん</span>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="YouTubeコメントスパイク解析 ロゴ" />
+        <span class="brand">YouTubeコメントスパイク解析</span>
       </a>
       <nav class="site-nav">
         <a href="#hero">トップ</a>
@@ -56,7 +56,7 @@
         <div class="results-panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Spike Overview</p>
+              <p class="eyebrow">全体集計</p>
               <h2>全コメントスパイク</h2>
             </div>
           </div>
@@ -65,18 +65,7 @@
               <canvas id="total-chart"></canvas>
             </div>
             <div class="panel list-panel">
-              <h3>スパイク一覧</h3>
-              <div class="spike-controls" data-spike-target="total">
-                <span>並び替え</span>
-                <div class="chip-group">
-                  <button type="button" class="chip chip-small active" data-spike-target="total" data-spike-sort="peak">
-                    ピーク値
-                  </button>
-                  <button type="button" class="chip chip-small" data-spike-target="total" data-spike-sort="time">
-                    時間順
-                  </button>
-                </div>
-              </div>
+              <h3>追加したスパイク</h3>
               <ul id="total-spike-list" class="spike-list"></ul>
             </div>
           </div>
@@ -87,7 +76,7 @@
         <div class="results-panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Keyword Filter</p>
+              <p class="eyebrow">キーワード抽出</p>
               <h2>キーワードフィルタ</h2>
             </div>
             <div class="keyword-controls">
@@ -101,18 +90,7 @@
               <canvas id="keyword-chart"></canvas>
             </div>
             <div class="panel list-panel">
-              <h3>キーワードスパイク</h3>
-              <div class="spike-controls" data-spike-target="keyword">
-                <span>並び替え</span>
-                <div class="chip-group">
-                  <button type="button" class="chip chip-small active" data-spike-target="keyword" data-spike-sort="peak">
-                    ピーク値
-                  </button>
-                  <button type="button" class="chip chip-small" data-spike-target="keyword" data-spike-sort="time">
-                    時間順
-                  </button>
-                </div>
-              </div>
+              <h3>追加したスパイク</h3>
               <ul id="keyword-spike-list" class="spike-list"></ul>
             </div>
           </div>
@@ -143,7 +121,21 @@
       </div>
     </footer>
 
+    <div id="spike-action-modal" class="spike-modal" hidden>
+      <div class="spike-modal__backdrop" data-modal-close></div>
+      <div class="spike-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="spike-modal-title">
+        <h3 id="spike-modal-title">スパイク操作</h3>
+        <p id="spike-action-message" class="spike-modal__message"></p>
+        <div id="spike-action-preview" class="spike-modal__preview"></div>
+        <div class="spike-modal__actions">
+          <button type="button" id="spike-view-btn" class="chip active">視聴</button>
+          <button type="button" id="spike-add-btn" class="chip">追加</button>
+          <button type="button" id="spike-cancel-btn" class="chip">閉じる</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js', v=asset_version('js/app.js')) }}"></script>
   </body>
 </html>

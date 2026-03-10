@@ -3,3 +3,5 @@ config/lightsail.env
 .venv/
 __pycache__/
 *.pyc
+README_forocal*
+README_forlocal*

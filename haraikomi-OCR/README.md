@@ -1,60 +1,154 @@
-# haraikomi-OCR
+<div id="top"></div>
 
-Local MVP app for turning a payment slip image into a Google Calendar reminder.
+## 使用技術一覧
 
-## What it does
+<p style="display: inline">
+  <img src="https://img.shields.io/badge/-Python-3776AB.svg?logo=python&style=for-the-badge&logoColor=white">
+  <img src="https://img.shields.io/badge/-FastAPI-009688.svg?logo=fastapi&style=for-the-badge&logoColor=white">
+  <img src="https://img.shields.io/badge/-Uvicorn-499848.svg?style=for-the-badge">
+  <img src="https://img.shields.io/badge/-Yomitoku-1A1A1A.svg?style=for-the-badge">
+  <img src="https://img.shields.io/badge/-Google%20Calendar%20API-4285F4.svg?logo=googlecalendar&style=for-the-badge&logoColor=white">
+  <img src="https://img.shields.io/badge/-Docker-2496ED.svg?logo=docker&style=for-the-badge&logoColor=white">
+</p>
 
-1. Open a local browser UI built with HTML, CSS, and vanilla JavaScript.
-2. Run Yomitoku `DocumentAnalyzer` on the image.
-3. Inspect the processing time, raw text, and JSON structure.
-4. Use the extracted due date and amount as the draft values.
-5. Let you correct the fields and create a Google Calendar event with popup reminders.
+## 目次
 
-## Prerequisites
+1. [プロジェクトについて](#プロジェクトについて)
+2. [環境](#環境)
+3. [ディレクトリ構成](#ディレクトリ構成)
+4. [開発環境構築](#開発環境構築)
+5. [トラブルシューティング](#トラブルシューティング)
 
-- Docker and Docker Compose
-- A Google Cloud project with the Google Calendar API enabled
-- OAuth client credentials downloaded as `credentials.json`
+## プロジェクト名
 
-## Setup
+haraikomi-OCR
+
+## プロジェクトについて
+
+`haraikomi-OCR` は、払込票画像を OCR で解析し、抽出した支払期限や金額を確認・修正して Google カレンダーへリマインダー登録するローカル向け MVP アプリです。
+
+### 主な機能
+
+- 画像アップロード（ブラウザ UI）
+- Yomitoku `DocumentAnalyzer` による OCR 実行
+- 処理時間・生テキスト・構造化 payload の確認
+- 支払期限 / 金額 / タイトル候補の自動抽出
+- フォーム修正後に Google カレンダーへイベント作成
+
+### API エンドポイント
+
+- `POST /api/ocr`: 画像を解析し、抽出結果を返却
+- `POST /api/calendar`: Google カレンダーへイベント作成
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## 環境
+
+| 言語・フレームワーク | バージョン |
+| -------------------- | ---------- |
+| Python               | 3.11 系（Docker イメージ: `python:3.11-slim`） |
+| FastAPI              | 0.115.0 以上 |
+| Uvicorn              | 0.34.0 以上 |
+| yomitoku             | 0.7.0 以上 |
+| google-api-python-client | 2.165.0 以上 |
+| google-auth-oauthlib | 1.2.0 以上 |
+| Docker Compose       | 任意（ローカル Docker 環境に依存） |
+
+詳細は `requirements.txt` を参照してください。
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## ディレクトリ構成
+
+```text
+.
+├── .cache
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── README.md
+├── README_forlocal.md
+├── app.py
+├── credentials.json
+├── docker-compose.yml
+├── haraikomi_ocr
+│   ├── __init__.py
+│   ├── calendar_client.py
+│   ├── models.py
+│   ├── ocr.py
+│   └── parser.py
+├── requirements.txt
+├── scripts
+│   └── bootstrap_google_token.py
+├── static
+│   ├── app.js
+│   ├── index.html
+│   ├── styles.css
+│   └── styles_plain.css
+└── token.json
+```
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## 開発環境構築
+
+### 1. 事前準備
+
+- Docker / Docker Compose
+- Google Cloud プロジェクト（Google Calendar API を有効化）
+- OAuth クライアント認証情報（`credentials.json`）
+
+`credentials.json` をプロジェクトルートに配置します。
 
 ```bash
 cp /path/to/your/google-oauth-client.json ./credentials.json
 ```
 
-## Start the app
+### 2. アプリ起動
 
 ```bash
+cd /home/kohei/WorkSpace/projects/haraikomi-OCR
 docker compose up --build
 ```
 
-The browser UI will be available at:
+起動後、`http://localhost:8000` にアクセスしてください。
 
-```bash
-http://localhost:8000
-```
+### 3. Google 認証（初回のみ）
 
-## Google authentication
-
-Because the app runs in a container, generate `token.json` once before creating events:
+コンテナ内から OAuth フローを実行し、`token.json` を生成します。
 
 ```bash
 docker compose run --rm --service-ports app python scripts/bootstrap_google_token.py
 ```
 
-This starts a temporary OAuth callback server on port `8080`. Open the URL printed in the terminal, complete the Google login, and `token.json` will be written into the project directory.
+- ターミナルに表示される URL をブラウザで開いてログイン
+- 認証完了後、プロジェクトルートに `token.json` が保存されます
+- OAuth コールバック用に `8080` ポートを使用します
 
-## Files used at runtime
+### 4. 停止
 
 ```bash
-./credentials.json
-./token.json
+docker compose down
 ```
 
-## Notes
+### 5. 補足
 
-- Yomitoku downloads model weights on first use. The compose file mounts a local cache directory so they are reused.
-- The parser is still heuristic-based. You should expect to review and correct fields before creating the reminder.
-- If OCR is slow on CPU, you can tune Yomitoku settings later, but this scaffold keeps the default CPU-safe setup.
-- The frontend is static files in `./static`, served by the FastAPI backend in `app.py`.
-- The main OCR flow calls `/api/ocr`, which runs `DocumentAnalyzer` and returns its payload for inspection.
+- 初回 OCR 実行時に Yomitoku モデルがダウンロードされます（`./.cache` に保存）。
+- `docker-compose.yml` で `./.cache:/app/.cache` をマウントしているため、再起動後もキャッシュを再利用します。
+- 生成されるイベントは `Asia/Tokyo` の 13:00-13:30、30 分前のポップアップ通知 1 件です。
+- パーサはヒューリスティックベースのため、カレンダー登録前にフォーム内容を確認してください。
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## トラブルシューティング
+
+- `Missing credentials.json` エラー:
+  - ルートに `credentials.json` を配置し、コンテナを再起動してください。
+- `Missing token.json` エラー:
+  - `docker compose run --rm --service-ports app python scripts/bootstrap_google_token.py` を実行してください。
+- OAuth の戻り先で失敗する場合:
+  - `8080` ポートが使用中でないか確認してください。
+- OCR が遅い場合:
+  - 初回モデルダウンロード完了後に再実行し、`./.cache` が永続化されているか確認してください。
+
+<p align="right">(<a href="#top">トップへ</a>)</p>

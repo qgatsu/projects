@@ -17,7 +17,6 @@ class Strategy(ABC):
         """
         pass
 
-    @abstractmethod
     def describe(self) -> str:
         """
         この戦略の内容や引数について、ユーザーが記述可能なドキュメントを返す。
@@ -26,13 +25,11 @@ class Strategy(ABC):
         readme = "state information of your strategy"
         return readme
     
-    @abstractmethod
     def get_metadata(self) -> dict:
         meta_dict ={
         }
 
         return meta_dict
     
-    @abstractmethod
     def get_name(self):
         return self.name 

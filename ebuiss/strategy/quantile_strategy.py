@@ -1,7 +1,7 @@
 # strategies/quantile_strategy.py
 
 import pandas as pd
-from strategy import Strategy
+from .strategy import Strategy
 
 class QuantileLongShortStrategy(Strategy):
     """

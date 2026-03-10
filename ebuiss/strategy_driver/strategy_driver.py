@@ -3,6 +3,7 @@
 import importlib.util
 import shutil
 import os
+import inspect
 import pandas as pd
 
 class StrategyDriver:
@@ -42,10 +43,24 @@ class StrategyDriver:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-        if not hasattr(module, strategy_name):
-            raise AttributeError(f"クラス {strategy_name} が {strategy_path} に存在しません。")
+        if hasattr(module, strategy_name):
+            cls = getattr(module, strategy_name)
+        else:
+            # Fallback: モジュール内で定義されたクラスが1つだけならそれを採用
+            candidates = [
+                obj
+                for _, obj in inspect.getmembers(module, inspect.isclass)
+                if obj.__module__ == module.__name__
+            ]
+            if len(candidates) == 1:
+                cls = candidates[0]
+            else:
+                class_names = [c.__name__ for c in candidates]
+                raise AttributeError(
+                    f"クラス {strategy_name} が {strategy_path} に存在しません。"
+                    f"利用可能クラス: {class_names}"
+                )
 
-        cls = getattr(module, strategy_name)
         instance = cls()
         return instance
 

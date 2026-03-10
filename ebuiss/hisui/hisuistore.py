@@ -10,6 +10,7 @@ class HisuiDB:
     def __init__(self):
         self._frames: Dict[str, HisuiFrame] = {}
         self._meta_table: pd.DataFrame = pd.DataFrame()
+        self._simple_meta_table: pd.DataFrame = pd.DataFrame(columns=["description"])
 
     def _update_meta_table(self):
         records = []
@@ -38,7 +39,7 @@ class HisuiDB:
         return list(self._frames.keys())
 
     def data_names(self) -> List[str]:
-        return self.names
+        return self.datanames
 
     def save_frames(self, names: List[str], path: str):
         os.makedirs(path, exist_ok=True)
